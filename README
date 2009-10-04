@@ -1,0 +1,4 @@
+X C++ bindings
+
+an implementation of the xcb protocol in C++ using boost.asio
+xcb is found at http://xcb.freedesktop.org
