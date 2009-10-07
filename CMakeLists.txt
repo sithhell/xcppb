@@ -6,12 +6,12 @@ SET (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMakeModules)
 PROJECT( xcppb )
 
 IF ( CMAKE_COMPILER_IS_GNUCXX )
-	ADD_DEFINITIONS ( "-pedantic-errors -Wall -Wextra"
-							#"-Wconversion"
-							#"-Wfloat-equal -Wredundant-decls -Wstrict-null-sentinel -Winit-self"
+	ADD_DEFINITIONS ( "-pedantic-errors -Wall -Wextra -Werror"
+							"-Wconversion"
+							"-Wfloat-equal -Wredundant-decls -Wstrict-null-sentinel -Winit-self"
 							"-Woverloaded-virtual -Wnon-virtual-dtor -Wctor-dtor-privacy"
-							#"-Wsign-promo -Wstrict-aliasing=1 -Wmissing-declarations"
-							#							"-Wold-style-cast"
+							"-Wsign-promo -Wstrict-aliasing=1 -Wmissing-declarations"
+							"-Wold-style-cast"
 							"-Wno-long-long -ansi" )
 
 	IF( ENABLE_DEBUG_WARNINGS )
@@ -38,7 +38,7 @@ IF( NOT Boost_FOUND )
 ENDIF()
 
 IF( Boost_INCLUDE_DIR )
-	INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
+	ADD_DEFINITIONS( "-isystem ${Boost_INCLUDE_DIR}" )
 ELSE()
 	MESSAGE( STATUS "Boost headers not found. You will have to specify them in your build environment or you can use -DBOOST_ROOT= or -DBoost_INCLUDE_DIR to tell cmake where your boost installation is." )
 ENDIF()

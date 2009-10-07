@@ -1,5 +1,5 @@
 
-#include <xcppb/auth/info.hpp>
+#include <xcppb/auth_info.hpp>
 
 #include <X11/Xdmcp.h>
 
@@ -8,10 +8,7 @@
 namespace xcppb
 {
 
-namespace auth
-{
-
-void info::compute_auth( Xauth *authptr )
+void auth_info::compute_auth( Xauth *authptr )
 {
 	if( name_ == std::string( detail::AUTH_PROTO_MIT_MAGIC_COOKIE ) )
 	{
@@ -24,7 +21,5 @@ void info::compute_auth( Xauth *authptr )
 	{
 	}
 }
-
-} // end namespace auth
 
 } // end namespace xcppb

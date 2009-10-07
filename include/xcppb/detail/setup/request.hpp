@@ -2,7 +2,7 @@
 #ifndef XCPPB_SETUP_DETAIL_REQUEST_HPP
 #define XCPPB_SETUP_DETAIL_REQUEST_HPP
 
-#include <xcppb/auth/info.hpp>
+#include <xcppb/auth_info.hpp>
 #include <xcppb/padding.hpp>
 
 #include <boost/asio/buffer.hpp>
@@ -15,10 +15,10 @@
 namespace xcppb
 {
 
-namespace setup
+namespace detail
 {
 
-namespace detail
+namespace setup
 {
 
 class request
@@ -45,8 +45,8 @@ class request
 			//pod[0].byte_order = detail::endianess< 0x42, 0x6c>::value;
 			protocol.protocol_major_version = X_PROTOCOL;
 			protocol.protocol_minor_version = X_PROTOCOL_REVISION;
-			protocol.authorization_protocol_name_len = info.name().length();
-			protocol.authorization_protocol_data_len = info.data().size();
+			protocol.authorization_protocol_name_len = static_cast<uint16_t>( info.name().length() );
+			protocol.authorization_protocol_data_len = static_cast<uint16_t>( info.data().size() );
 
 			buf.push_back( boost::asio::buffer( &protocol, sizeof( request_protocol ) ) );
 			buf.push_back( boost::asio::buffer( &pad, xcppb::padding<char[3]>( sizeof( request_protocol ) ) ) );
@@ -59,13 +59,13 @@ class request
 		}
 
 		
-		const xcppb::auth::info &auth_info() const
+		const xcppb::auth_info &auth_info() const
 		{
 			return info;
 		}
 
 	private:
-		xcppb::auth::info info;
+		xcppb::auth_info info;
 
 		struct request_protocol
 		{
@@ -83,9 +83,9 @@ class request
 		enum { X_PROTOCOL_REVISION = 0 };
 };
 
-} // end namespace detail
-
 } // end namespace setup
+
+} // end namespace detail
 
 } // end namespace xcppb
 #endif

@@ -2,7 +2,7 @@
 #ifndef XCPPB_AUTH_INFO_HPP
 #define XCPPB_AUTH_INFO_HPP
 
-#include <xcppb/auth/detail/get_authptr.hpp>
+#include <xcppb/detail/get_authptr.hpp>
 
 #include <string>
 #include <vector>
@@ -14,14 +14,11 @@
 namespace xcppb
 {
 
-namespace auth
-{
-
-class info
+class auth_info
 {
 	public:
 		template< typename SocketType >
-		explicit info( const SocketType &s, int display = 0 );
+		explicit auth_info( const SocketType &s, int display = 0 );
 
 		const std::string &name() const
 		{
@@ -42,7 +39,7 @@ class info
 
 
 template< typename SocketType >
-info::info( const SocketType &s, int display )
+auth_info::auth_info( const SocketType &s, int display )
 {
 	typedef typename SocketType::endpoint_type endpoint_type;
 
@@ -73,8 +70,6 @@ info::info( const SocketType &s, int display )
 
 	XauDisposeAuth( authptr );
 }
-
-} // end namespace auth
 
 } // end namespace xcppb
 

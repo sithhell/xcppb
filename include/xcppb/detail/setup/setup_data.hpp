@@ -7,10 +7,10 @@
 namespace xcppb
 {
 
-namespace setup
+namespace detail
 {
 
-namespace detail
+namespace setup
 {
 
 struct setup_data
@@ -32,9 +32,9 @@ struct setup_data
 	uint8_t       	pad[4]; /**<  */
 };
 
-} // end namespace detail
-
 } // end namespace setup
+
+} // end namespace detail
 
 } // end namespace xcppb
 

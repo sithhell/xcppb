@@ -2,7 +2,7 @@
 #ifndef XCPPB_AUTH_GET_AUTHPTR_HPP
 #define XCPPB_AUTH_GET_AUTHPTR_HPP
 
-#include <xcppb/auth/detail/get_addr.hpp>
+#include <xcppb/detail/get_addr.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <string>
@@ -14,9 +14,6 @@
 #include <X11/Xdmcp.h>
 
 namespace xcppb
-{
-
-namespace auth
 {
 
 namespace detail
@@ -77,16 +74,14 @@ Xauth *get_authptr( const EndpointType &endpoint, int display )
 	return XauGetBestAuthByAddr
 		(
 			family,
-			addr.size(), addr.c_str(),
-			disp_str.size(), disp_str.c_str(),
+			static_cast<short unsigned int>( addr.size() ), addr.c_str(),
+			static_cast<short unsigned int>( disp_str.size() ), disp_str.c_str(),
 			N_AUTH_PROTOS, authnames, authnameslen
 		);
 }
 
 } // end namespace detail
 	
-} // end namespace auth
-
 } // end namespace xcppb
 
 #endif

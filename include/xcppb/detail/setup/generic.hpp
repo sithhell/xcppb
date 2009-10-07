@@ -7,10 +7,10 @@
 namespace xcppb
 {
 
-namespace setup
+namespace detail
 {
 
-namespace detail
+namespace setup
 {
 
 struct generic
@@ -22,9 +22,9 @@ struct generic
 	uint16_t	length;
 };
 
-} // end namespace detail
-
 } // end namespace setup
+
+} // end namespace detail
 
 } // end namespace xcppb
 

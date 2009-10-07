@@ -11,9 +11,6 @@
 namespace xcppb
 {
 
-namespace auth
-{
-
 namespace detail
 {
 
@@ -23,8 +20,6 @@ std::string get_addr( const boost::asio::local::stream_protocol::endpoint &endpo
 
 } // end namespace detail
 	
-} // end namespace auth
-
 } // end namespace xcppb
 
 #endif

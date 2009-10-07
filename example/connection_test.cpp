@@ -31,7 +31,7 @@ try
 		> c( s );
 
 	std::cerr << c;
-
+	
 	return 0;
 }
 catch( std::exception &e )

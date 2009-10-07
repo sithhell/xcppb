@@ -14,7 +14,7 @@ size_t padding( size_t size )
 
 // replacement for XCB_*PAD
 template< typename T >
-size_t padding( size_t i )
+std::size_t padding( std::size_t i )
 {
 	return ( -i & ( sizeof( T ) > 4 ? 3 : sizeof( T ) - 1 ) );
 }
