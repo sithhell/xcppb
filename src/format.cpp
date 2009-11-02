@@ -1,20 +1,27 @@
 
 #include <xcppb/format.hpp>
 
-#include <iostream>
-
 #include <cstring>
 
 
 namespace xcppb
 {
 
-format::format( char *&data, size_t &index )
+format::format( const data::format& f )
+	: data_( f )
 {
-	std::memcpy( &data_, data, sizeof( detail::format_data ) );
+}
 
-	data += sizeof( detail::format_data );
-	index += sizeof( detail::format_data );
+void format::print( std::ostream& os ) const
+{
+	os << "Depth: " << +data_.get< data::depth >() << ", Bits per pixel: " << +data_.get< data::bits_per_pixel >();
+}
+
+std::ostream& operator<<( std::ostream& os, const format& f )
+{
+	f.print( os );
+
+	return os;
 }
 
 } // end namespace xcppb
