@@ -34,29 +34,6 @@ namespace xcppb
 
 namespace proto
 {
-/*
-    struct mini_xml;
-
-    typedef
-        boost::variant<
-            boost::recursive_wrapper<mini_xml>
-          , std::string
-        >
-    mini_xml_node;
-
-    struct mini_xml
-    {
-        std::string name;                           // tag name
-        std::vector<mini_xml_node> children;        // children
-    };
-
-	 // We need to tell fusion about our mini_xml struct
-// to make it a first-class fusion citizen
-BOOST_FUSION_ADAPT_STRUCT(
-    xcppb::proto::mini_xml,
-    (std::string, name)
-    (std::vector<xcpbb::proto::mini_xml_node>, children)
-)*/
 
 template< typename Iterator/*, typename Lexer*/ >
 struct grammar
@@ -67,204 +44,102 @@ struct grammar
 	//grammar( )
 	:	grammar::base_type( xml )
 	{
-#if 0
-		/*
-		text %= +( tok.tag | tok.ws );
-		node %= xml | text;
-
-		attribute
-			= qi::lexeme[ +( qi::char_ - '=' ) ]
-			> '='
-			>  qi::lexeme[ +( qi::char_ - '>' ) ]
-			;
-
-		start_tag
-			%= qi::lit( '<' )
-			>> qi::in_state( "TAG" )
-				[
-						tok.tag
-					>	qi::omit
-						[
-							*tok.ws_tag
-						]
-					>	qi::lit( '>' )
-				]
-			;
-
-		end_tag
-			=	qi::lit( '<' )
-			>>	qi::in_state( "TAG" )
-				[
-						qi::lit( '/' )
-					>	tok.tag
-						[
-							phoenix::if_( qi::_r1 != qi::_1 )
-							[
-								qi::_pass = false
-							]
-						]
-					>	qi::omit
-						[
-							*tok.ws_tag
-						]
-					> qi::lit( '>' )
-				]
-			;*/
-		element = *tok.ws;
-
-		comment
-			=	tok.comment_begin[ std::cout << phoenix::val( "comment:\n" ) ]
-			> 	qi::in_state( "COMMENT" )
-				[
-					*tok.any[ std::cout << qi::_1 << "\n" ]
-				]
-			>	tok.comment_end
-			;
-
-		misc
-			=	comment
-			//|	processing_instructions
-			|	+tok.ws
-			;
-
-		xml
-			= 	//prolog[ std::cout << phoenix::val( "parsed prolog ... " ) ]
-			//>> element
-			 *misc
-			;
-
-		prolog
-			=	-xml_decl
-			>>	*misc
-			>>	-(
-						doc_type_decl
-					>>	*misc
-				)
-			;
-
-		xml_decl
-			=	tok.prolog_begin
-			>	version_info
-			>	qi::omit
-				[
-					-( +tok.ws )
-				]
-			> tok.prolog_end
-			;
-
-		version_info
-			=	+tok.ws
-			>	tok.version
-			> 	-( +tok.ws ) > qi::lit( '=' ) > -( +tok.ws )
-			>	(
-						( qi::lit( '\'' ) >> tok.version_num >> qi::lit( '\'' ) )
-					|	( qi::lit( '"' ) >> tok.version_num >> qi::lit( '"' ) )
-				)
-			;
-
-		xml
-			%= prolog
-			>> qi::omit
-            [
-            	*tok.ws
-            ]
-			>>	start_tag
-				[
-					qi::_a = qi::_1,
-				]
-			>  *node
-			>> qi::omit
-				[
-					*tok.ws
-				]
-			>  end_tag( qi::_a )
-			>> qi::omit
-				[
-					*tok.ws
-				]
-			;
-#endif
 		any = *tok.any;
-		ws  = tok.ws;
 
-		close_tag
-			= qi::lit( '>' )
-			|
-				(
-					qi::lit( '/' ) > qi::lit( '>' )
-				)
-			;
+		/*close_tag
+			= *tok.ws
+			>> (
+					  qi::lit( '>' )
+					| (
+						qi::lit( '/' ) >> qi::lit( '>' )
+					  )
+			   )
+			;*/
 
 		xml
-			=  *tok.ws
-			>  tok.prolog[ std::cout << phoenix::val( "prolog... " ) ]
-			>  *tok.ws
+			=  tok.prolog[ std::cout << phoenix::val( "prolog... \n" ) ]
 			>  xcb
-			>  *tok.ws
 			;
 
 		attribute
-			=  *ws
-			>  qi::lit( '=' )
-			>  *ws
-			>  qi::lit( '"' )
-			>  any
-			>  qi::lit( '"' )
-			>  *ws
+			=  qi::lit( '=' )
+			>> *tok.ws
+			>>  qi::lit( '"' ) //>> any
+			>>  qi::in_state("ATTRIBUTE_VALUE")
+				[
+					tok.attribute[ std::cout << qi::_1 << "attribute ..." ]
+				]
+			>>  qi::lit( '"' )
 			;
 
 		xcb
 			=  tok.xcb_begin
-			>>  +ws
-			>     tok.header              > attribute
-			>  -( tok.extension_xname     > attribute )
-			>  -( tok.extension_name      > attribute )
-			>  -( tok.extension_multiword > attribute )
-			>  -( tok.major_version       > attribute )
-			>  -( tok.minor_version       > attribute )
-			>  close_tag
-			>>  *tok.ws
+			>>     tok.header              >> attribute
+			>>  -( tok.extension_xname     >> attribute )
+			>>  -( tok.extension_name      >> attribute )
+			>>  -( tok.extension_multiword >> attribute )
+			>>  -( tok.major_version       >> attribute )
+			>>  -( tok.minor_version       >> attribute )
+			>>  tok.close_tag
 			>>  *macro
-			>>  *tok.ws
-			>  tok.xcb_end
+			>>  tok.xcb_end
 			;
 
 		pad
 			=  tok.pad
-			>  +ws
-			>  tok.bytes                  > attribute
-			>  close_tag
+			>>  tok.bytes >> attribute
+			>>  tok.close_tag
 			;
 
 		var
-			=    tok.name      > attribute
-			>    tok.type      > attribute
-			> -( tok.enum_attr > attribute )
-			> -( tok.altenum   > attribute )
-			> -( tok.mask      > attribute )
+			= ( tok.name      > attribute[ std::cout << qi::_1 << " (name)... " ] )
+			^ ( tok.type      > attribute[ std::cout << qi::_1 << " (type)... " ] )
+			^ ( tok.enum_attr > attribute )
+			^ ( tok.altenum   > attribute )
+			^ ( tok.mask      > attribute )
+			  
 			;
 
 		field
 			=  tok.field
-			>  +ws
-			>  var
-			>  close_tag
+			>>  var
+			>> tok.close_tag;
 			;
 
 		list
 			= tok.list_begin
-			> var
-			> close_tag
-			> *ws
-			> repeat( 0, 1 )[ expression ]
-			> *ws
-			> tok.list_end
+			>> var
+			>> tok.close_tag
+			>> qi::repeat( 0, 1 )[ expression ]
+			>> tok.list_end
 			;
 
 		op
 			= tok.op
-			> tok.op_attr > *ws > qi::lit( '=' ) > *ws > qi::lit( '"' ) > tok.op_attr_val > qi::lit( '"' ) > *ws
-			> expression > expression
+			>> tok.op_attr 
+			>> qi::lit( '=' ) 
+			>> qi::lit( '"' ) 
+			>> tok.op_attr_val
+			>> qi::lit( '"' )
+			>> expression >> expression
+			;
+
+		fieldref
+			= tok.fieldref_begin
+			>> any
+			>> tok.fieldref_end
+			;
+
+		value
+			= tok.value_begin
+			>> any
+			>> tok.value_end
+			;
+
+		bit
+			= tok.bit_begin
+			>> any
+			>> tok.bit_end
 			;
 
 		expression
@@ -276,48 +151,130 @@ struct grammar
 
 		exprfield
 			= tok.exprfield_begin
-			> var
-			> close_tag
-			> *ws
-			> expression
-			> *ws
-			> tok.exprfield_end
+			>> var
+			>> tok.close_tag
+			>> expression
+			>> tok.exprfield_end
 			;
 
 		valueparam
-			= tok
+			=  tok.valueparam
+			>> tok.value_mask_type >> attribute
+			>> tok.value_mask_name >> attribute
+			>> tok.value_list_name >> attribute
+			>> tok.close_tag
+			;
+
+		fields
+			= pad
+			| field[ std::cout << phoenix::val( "found field ...\n" ) ]
+			| list
+			;
+
+		struct_
+			=  tok.name >> attribute
+			>> tok.close_tag
+			>> +fields
+			;
+
+		packet_struct
+			=  tok.name >> attribute
+			>> tok.number >> attribute
+			>> tok.close_tag
+			>> +fields
+			;
+
+		packet_struct_copy
+			=  tok.name >> attribute
+			>> tok.number >> attribute
+			>> tok.ref >> attribute
+			>> tok.close_tag
+			;
+
+		reply
+			= tok.reply_begin
+			>> +(
+					  fields
+					| valueparam
+				)
+			;
 
 		request
 			=  tok.request_begin
-			>  +ws
-			>     tok.name                > attribute
-			>     tok.opcode              > attribute
-			>  -( tok.combine_adjacent    > attribute )
-			>  close_tag
-			>> *ws
-			>  *(
+			>>     tok.name             >> attribute
+			>>     tok.opcode           >> attribute
+			>>  -( tok.combine_adjacent > attribute )
+			>>  tok.close_tag
+			>>  *(
 						fields
 					|  exprfield
 					|  valueparam
 				)
 			>  qi::repeat( 0, 1 )[ reply ]
-			>> *ws
-			>  tok.request_end
+			>>  tok.request_end
+			;
+
+		xidtype
+			= tok.xidtype
+			>> tok.name
+			>> attribute
+			>> tok.close_tag
+			;
+
+		xidunion
+			= tok.xidunion_begin
+			>> tok.name >> attribute
+			>> tok.close_tag
+			>> +(
+					   tok.type_begin
+					>> any
+					>> tok.type_end
+			   )
+			>> tok.xidunion_end
+			;
+
+		item
+			= tok.item_begin
+			>> tok.name >> attribute
+			>> tok.close_tag
+			>> qi::repeat( 0, 1 )[ expression ]
+			>> tok.item_end
+			;
+
+		enum_
+			=  tok.enum_begin
+			>> tok.name >> attribute
+			>> tok.close_tag
+			>> *item
+			>> tok.enum_end
+			;
+
+		typedef_
+			=  tok.typedef_
+			>> tok.oldname >> attribute
+			>> tok.newname >> attribute
+			>> tok.close_tag
+			;
+
+		import
+			=  tok.import_begin
+			>> any
+			>> tok.import_end
 			;
 
 		macro
-			=  request
-			|  event
-			|  eventcopy
-			|  error
-			|  errorcopy
-			|  struct_
-			|  union_
-			|  xidtype
-			|  xidunion
-			|  enum_
-			|  typedef_
-			|  import
+			=  request[ std::cout << phoenix::val( "found request ...\n" ) ]
+			|  event[ std::cout << phoenix::val( "found event ...\n" ) ]
+			|  ( tok.eventcopy >> packet_struct_copy )[ std::cout << phoenix::val( "found error ...\n" ) ]
+			|  ( tok.error_begin >> packet_struct >> tok.error_end )[ std::cout << phoenix::val( "found error ...\n" ) ]
+			|  ( tok.errorcopy >> packet_struct_copy )[ std::cout << phoenix::val( "found errorcopy ...\n" ) ]
+			|  ( tok.struct_begin >> struct_ >> tok.struct_end )[ std::cout << phoenix::val( "found struct ...\n" ) ]
+			|  ( tok.union_begin >> struct_ >> tok.union_end )[ std::cout << phoenix::val( "found union ...\n" ) ]
+			|  xidtype[ std::cout << phoenix::val( "found xidtype ...\n" ) ]
+			|  xidunion[ std::cout << phoenix::val( "found xidunion ...\n" ) ]
+			|  enum_[ std::cout << phoenix::val( "found enum ...\n" ) ]
+			|  typedef_[ std::cout << phoenix::val( "found typedef ...\n" ) ]
+			|  import[ std::cout << phoenix::val( "found import ...\n" ) ]
 			;
 
 		qi::on_error<qi::fail>
@@ -335,141 +292,176 @@ struct grammar
 
 	qi::rule
 	<
-		Iterator//,
-		//qi::locals<std::string>//,
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
+		Iterator,
+		std::string()
+	> any;
+
+	/*qi::rule
+	<
+		Iterator
+	> close_tag;*/
+
+	qi::rule
+	<
+		Iterator
 	> xml;
 
 	qi::rule
 	<
-		Iterator//,
-		//qi::locals<std::string>//,
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
+		Iterator,
+		std::string()
 	> attribute;
 
 	qi::rule
 	<
-		Iterator//,
-		//qi::locals<std::string>//,
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
+		Iterator
 	> xcb;
+
+	qi::rule
+	<
+		Iterator
+	> pad;
 	
 	qi::rule
 	<
-		Iterator//,
-		//qi::locals<std::string>//,
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
+		Iterator
+	> var;
+	
+	qi::rule
+	<
+		Iterator
+	> field;
+	
+	qi::rule
+	<
+		Iterator
+	> list;
+
+	qi::rule
+	<
+		Iterator
+	> expression;
+
+	qi::rule
+	<
+		Iterator
+	> op;
+
+	qi::rule
+	<
+		Iterator
+	> fieldref;
+
+	qi::rule
+	<
+		Iterator
+	> value;
+
+	qi::rule
+	<
+		Iterator
+	> bit;
+
+	qi::rule
+	<
+		Iterator
+	> exprfield;
+
+	qi::rule
+	<
+		Iterator
+	> valueparam;
+	
+	qi::rule
+	<
+		Iterator
+	> fields;
+	
+	qi::rule
+	<
+		Iterator
+	> packet_struct;
+	
+	qi::rule
+	<
+		Iterator
+	> packet_struct_copy;
+
+	qi::rule
+	<
+		Iterator
+	> item;
+
+	qi::rule
+	<
+		Iterator
+	> reply;
+
+	qi::rule
+	<
+		Iterator
+	> request;
+
+	qi::rule
+	<
+		Iterator
+	> event;
+
+	qi::rule
+	<
+		Iterator
+	> eventcopy;
+
+	qi::rule
+	<
+		Iterator
+	> error;
+
+	qi::rule
+	<
+		Iterator
+	> errorcopy;
+
+	qi::rule
+	<
+		Iterator
+	> struct_;
+
+	qi::rule
+	<
+		Iterator
+	> union_;
+
+	qi::rule
+	<
+		Iterator
+	> xidtype;
+
+	qi::rule
+	<
+		Iterator
+	> xidunion;
+
+	qi::rule
+	<
+		Iterator
+	> enum_;
+
+	qi::rule
+	<
+		Iterator
+	> typedef_;
+
+	qi::rule
+	<
+		Iterator
+	> import;
+
+	qi::rule
+	<
+		Iterator
 	> macro;
 
-	qi::rule
-	<
-		Iterator//,
-		//qi::locals<std::string>//,
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
-	> any;
-	
-	qi::rule
-	<
-		Iterator//,
-		//qi::locals<std::string>//,
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
-	> ws;
-
-	qi::rule
-	<
-		Iterator//,
-		//qi::locals<std::string>//,
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
-	> close_tag;
-
-#if 0
-	qi::rule
-	<
-		Iterator//,
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
-	> prolog;
-
-	qi::rule
-	<
-		Iterator//,
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
-	> xml_decl;
-
-	qi::rule
-	<
-		Iterator//,
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
-	> element;
-
-	qi::rule
-	<
-		Iterator//,
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
-	> misc;
-
-	qi::rule
-	<
-		Iterator
-	> version_info;
-
-	qi::rule
-	<
-		Iterator
-	> doc_type_decl;
-
-	qi::rule
-	<
-		Iterator
-	> comment;
-	qi::rule
-	<
-		Iterator//,
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
-	> node;
-
-	qi::rule
-	<
-		Iterator//,
-		//std::string(),
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
-	> text;
-
-	qi::rule
-	<
-		Iterator,
-		std::string()//,
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
-	> start_tag;
-
-	qi::rule
-	<
-		Iterator,
-		void( std::string )//,
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
-	> end_tag;
-
-	qi::rule
-	<
-		Iterator//,
-		//ascii::space_type
-		//qi::in_state_skipper< Lexer >
-	> attribute;
-#endif
 };
 
 } // end namespace proto
