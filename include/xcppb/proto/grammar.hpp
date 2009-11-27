@@ -42,7 +42,7 @@ struct grammar
 	template< typename TokenDef >
 	grammar( TokenDef const & tok )
 	//grammar( )
-	:	grammar::base_type( xml )
+	:	grammar::base_type( xml, "xml" )
 	{
 		any = *tok.any;
 
@@ -56,92 +56,102 @@ struct grammar
 			   )
 			;*/
 
+		xml.name( "xml" );
 		xml
-			=  tok.prolog[ std::cout << phoenix::val( "prolog... \n" ) ]
-			>  xcb
+			= -( tok.prolog[ std::cout << phoenix::val( "prolog... \n" ) ] )
+			> xcb
 			;
 
+		attribute.name( "attribute" );
 		attribute
 			=  qi::lit( '=' )
 			>> *tok.ws
-			>>  qi::lit( '"' ) //>> any
-			>>  qi::in_state("ATTRIBUTE_VALUE")
-				[
-					tok.attribute[ std::cout << qi::_1 << "attribute ..." ]
-				]
-			>>  qi::lit( '"' )
+			>  tok.attribute_begin
+			>  tok.attribute
+			>  tok.attribute_end
 			;
 
+		xcb.name( "xcb" );
 		xcb
 			=  tok.xcb_begin
-			>>     tok.header              >> attribute
-			>>  -( tok.extension_xname     >> attribute )
-			>>  -( tok.extension_name      >> attribute )
-			>>  -( tok.extension_multiword >> attribute )
-			>>  -( tok.major_version       >> attribute )
-			>>  -( tok.minor_version       >> attribute )
-			>>  tok.close_tag
+			>     tok.header              > attribute
+			>  -( tok.extension_xname     > attribute )
+			>  -( tok.extension_name      > attribute )
+			>  -( tok.extension_multiword > attribute )
+			>  -( tok.major_version       > attribute )
+			>  -( tok.minor_version       > attribute )
+			>  tok.close_tag
 			>>  *macro
-			>>  tok.xcb_end
+			>  tok.xcb_end
 			;
 
+		pad.name( "pad" );
 		pad
 			=  tok.pad
-			>>  tok.bytes >> attribute
-			>>  tok.close_tag
+			>  tok.bytes > attribute
+			>  tok.close_tag
 			;
 
+		var.name( "var" );
 		var
-			= ( tok.name      > attribute[ std::cout << qi::_1 << " (name)... " ] )
-			^ ( tok.type      > attribute[ std::cout << qi::_1 << " (type)... " ] )
+			= ( tok.name      > attribute[ std::cout << qi::_1 << " (name) " ] )
+			^ ( tok.type      > attribute[ std::cout << qi::_1 << " (type) " ] )
 			^ ( tok.enum_attr > attribute )
 			^ ( tok.altenum   > attribute )
 			^ ( tok.mask      > attribute )
 			  
 			;
 
+		field.name( "field" );
 		field
 			=  tok.field
-			>>  var
-			>> tok.close_tag;
+			>  var
+			> tok.close_tag;
 			;
 
+		list.name( "name" );
 		list
 			= tok.list_begin
-			>> var
-			>> tok.close_tag
-			>> qi::repeat( 0, 1 )[ expression ]
-			>> tok.list_end
+			> var
+			> tok.close_tag
+			> -( expression > tok.list_end )
 			;
 
+		op.name( "op" );
 		op
-			= tok.op
-			>> tok.op_attr 
-			>> qi::lit( '=' ) 
-			>> qi::lit( '"' ) 
-			>> tok.op_attr_val
-			>> qi::lit( '"' )
-			>> expression >> expression
+			= tok.op_begin
+			> tok.op_attr > attribute
+			/*> qi::lit( '=' ) 
+			> qi::lit( '"' ) 
+			> tok.op_attr_val
+			> qi::lit( '"' )*/
+			> tok.close_tag
+			> expression > expression
+			> tok.op_end
 			;
 
+		fieldref.name( "fieldref" );
 		fieldref
 			= tok.fieldref_begin
-			>> any
-			>> tok.fieldref_end
+			> tok.element
+			> qi::lit( '<' ) > tok.fieldref_end
 			;
 
+		value.name( "value" );
 		value
 			= tok.value_begin
-			>> any
-			>> tok.value_end
+			> any
+			> tok.value_end
 			;
 
+		bit.name( "bit" );
 		bit
 			= tok.bit_begin
-			>> any
-			>> tok.bit_end
+			> any
+			> tok.bit_end
 			;
 
+		expression.name( "expression" );
 		expression
 			= op
 			| fieldref
@@ -149,127 +159,156 @@ struct grammar
 			| bit
 			;
 
+		exprfield.name( "exprfield" );
 		exprfield
 			= tok.exprfield_begin
-			>> var
-			>> tok.close_tag
-			>> expression
-			>> tok.exprfield_end
+			> var
+			> tok.close_tag
+			> expression
+			> tok.exprfield_end
 			;
 
+		valueparam.name( "valueparam" );
 		valueparam
 			=  tok.valueparam
-			>> tok.value_mask_type >> attribute
-			>> tok.value_mask_name >> attribute
-			>> tok.value_list_name >> attribute
-			>> tok.close_tag
+			> tok.value_mask_type > attribute
+			> tok.value_mask_name > attribute
+			> tok.value_list_name > attribute
+			> tok.close_tag
 			;
 
+		fields.name( "fields" );
 		fields
 			= pad
 			| field[ std::cout << phoenix::val( "found field ...\n" ) ]
 			| list
 			;
 
+		struct_.name( "struct" );
 		struct_
-			=  tok.name >> attribute
-			>> tok.close_tag
-			>> +fields
+			=  tok.name > attribute[ std::cout << qi::_1 << " (name ) " ]
+			> tok.close_tag
+			> +fields
 			;
 
+		packet_struct.name( "packet-struct" );
 		packet_struct
-			=  tok.name >> attribute
-			>> tok.number >> attribute
-			>> tok.close_tag
-			>> +fields
+			=  tok.name > attribute[ std::cout << qi::_1 << " (name ) " ]
+			> tok.number > attribute
+			> tok.close_tag
+			> *fields
 			;
 
+		packet_struct_copy.name( "packet-struct-copy" );
 		packet_struct_copy
-			=  tok.name >> attribute
-			>> tok.number >> attribute
-			>> tok.ref >> attribute
-			>> tok.close_tag
+			= ( ( tok.name > attribute[ std::cout << qi::_1 << " (name ) " ] )
+			^ ( tok.number > attribute )
+			^ ( tok.ref > attribute ) )
+			> tok.close_tag
 			;
 
+		reply.name( "reply" );
 		reply
 			= tok.reply_begin
-			>> +(
+			> +(
 					  fields
 					| valueparam
 				)
+			> tok.reply_end
 			;
 
+		request.name( "request" );
 		request
 			=  tok.request_begin
-			>>     tok.name             >> attribute
-			>>     tok.opcode           >> attribute
-			>>  -( tok.combine_adjacent > attribute )
-			>>  tok.close_tag
-			>>  *(
+			>     tok.name             > attribute[ std::cout << qi::_1 << " (name ) " ]
+			>     tok.opcode           > attribute
+			>  -( tok.combine_adjacent > attribute )
+			>  tok.close_tag
+			>  *(
 						fields
 					|  exprfield
 					|  valueparam
 				)
-			>  qi::repeat( 0, 1 )[ reply ]
-			>>  tok.request_end
+			>  -( reply )
+			> - ( tok.request_end )
 			;
 
+		event.name( "event" );
+		event
+			= tok.event_begin
+			> tok.name > attribute[ std::cout << qi::_1 << " (name ) " ]
+			> tok.number > attribute
+			> -( tok.no_sequence_number > attribute )
+			> tok.close_tag
+			> +fields
+			> tok.event_end
+			;
+
+		xidtype.name( "xidtype" );
 		xidtype
 			= tok.xidtype
-			>> tok.name
-			>> attribute
-			>> tok.close_tag
+			> tok.name
+			> attribute[ std::cout << qi::_1 << " (name ) " ]
+			> tok.close_tag
 			;
 
+		xidunion.name( "xidunion" );
 		xidunion
 			= tok.xidunion_begin
-			>> tok.name >> attribute
-			>> tok.close_tag
-			>> +(
+			> tok.name > attribute[ std::cout << qi::_1 << " (name ) " ]
+			> tok.close_tag
+			> +(
 					   tok.type_begin
-					>> any
-					>> tok.type_end
+					> any
+					> tok.type_end
 			   )
-			>> tok.xidunion_end
+			> tok.xidunion_end
 			;
 
+		item.name( "item" );
 		item
 			= tok.item_begin
-			>> tok.name >> attribute
-			>> tok.close_tag
-			>> qi::repeat( 0, 1 )[ expression ]
-			>> tok.item_end
+			> tok.name > attribute[ std::cout << qi::_1 << " (name ) " ]
+			> tok.close_tag
+			> -(
+					  expression
+					> tok.item_end
+				)
 			;
 
+		enum_.name( "enum" );
 		enum_
 			=  tok.enum_begin
-			>> tok.name >> attribute
-			>> tok.close_tag
-			>> *item
-			>> tok.enum_end
+			> tok.name > attribute[ std::cout << qi::_1 << " (name ) " ]
+			> tok.close_tag
+			> *item
+			> tok.enum_end
 			;
 
+		typedef_.name( "typedef" );
 		typedef_
 			=  tok.typedef_
-			>> tok.oldname >> attribute
-			>> tok.newname >> attribute
-			>> tok.close_tag
+			> tok.oldname > attribute
+			> tok.newname > attribute
+			> tok.close_tag
 			;
 
+		import.name( "import" );
 		import
 			=  tok.import_begin
-			>> any
-			>> tok.import_end
+			> tok.element
+			> qi::lit( '<' ) > tok.import_end
 			;
 
+		macro.name( "macro" );
 		macro
 			=  request[ std::cout << phoenix::val( "found request ...\n" ) ]
 			|  event[ std::cout << phoenix::val( "found event ...\n" ) ]
-			|  ( tok.eventcopy >> packet_struct_copy )[ std::cout << phoenix::val( "found error ...\n" ) ]
-			|  ( tok.error_begin >> packet_struct >> tok.error_end )[ std::cout << phoenix::val( "found error ...\n" ) ]
-			|  ( tok.errorcopy >> packet_struct_copy )[ std::cout << phoenix::val( "found errorcopy ...\n" ) ]
-			|  ( tok.struct_begin >> struct_ >> tok.struct_end )[ std::cout << phoenix::val( "found struct ...\n" ) ]
-			|  ( tok.union_begin >> struct_ >> tok.union_end )[ std::cout << phoenix::val( "found union ...\n" ) ]
+			|  ( tok.eventcopy > packet_struct_copy )[ std::cout << phoenix::val( "found eventcopy ...\n" ) ]
+			|  ( tok.error_begin > packet_struct > -( tok.error_end ) )[ std::cout << phoenix::val( "found error ...\n" ) ]
+			|  ( tok.errorcopy > packet_struct_copy )[ std::cout << phoenix::val( "found errorcopy ...\n" ) ]
+			|  ( tok.struct_begin > struct_ > tok.struct_end )[ std::cout << phoenix::val( "found struct ...\n" ) ]
+			|  ( tok.union_begin > struct_ > tok.union_end )[ std::cout << phoenix::val( "found union ...\n" ) ]
 			|  xidtype[ std::cout << phoenix::val( "found xidtype ...\n" ) ]
 			|  xidunion[ std::cout << phoenix::val( "found xidunion ...\n" ) ]
 			|  enum_[ std::cout << phoenix::val( "found enum ...\n" ) ]
@@ -295,11 +334,6 @@ struct grammar
 		Iterator,
 		std::string()
 	> any;
-
-	/*qi::rule
-	<
-		Iterator
-	> close_tag;*/
 
 	qi::rule
 	<

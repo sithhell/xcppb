@@ -34,7 +34,12 @@ int main( int /*argc*/, char **argv )
 
 	typedef lex::lexertl::token
 	<
-		base_iterator_type
+		base_iterator_type,
+		boost::mpl::vector
+		<
+			std::string,
+			char
+		>
 	> token_type;
 
 	typedef lex::lexertl::actor_lexer< token_type > lexer_type;
@@ -64,11 +69,11 @@ int main( int /*argc*/, char **argv )
 
 	if( r )
 	{
-		std::cout << "success\n";
+		std::cerr << "success\n";
 	}
 	else
 	{
-		std::cout << "fail\n";
+		std::cerr << "fail\n";
 	}
 
 	return 0;

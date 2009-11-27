@@ -15,6 +15,23 @@ namespace xcppb
 namespace proto
 {
 
+struct set_lexer_state
+{
+    set_lexer_state(char const* state_)
+      : state(state_) {}
+
+    // This is called by the semantic action handling code during the lexing
+    template <typename Iterator, typename Context>
+    void operator()(Iterator const&, Iterator const&
+      , BOOST_SCOPED_ENUM(boost::spirit::lex::pass_flags)&
+      , std::size_t&, Context& ctx) const
+    {
+        ctx.set_state_name(state.c_str());
+    }
+
+    std::string state;
+};
+
 template< typename Lexer >
 struct tokens
 	: lex::lexer<Lexer>
@@ -22,11 +39,22 @@ struct tokens
 	tokens()
 	{
 		this->self.add_pattern
-			( "WS", "[ \t\n]" )
+			( "WS", "[ \t\n]|\"<!--\"[^-]*\"-\"([^-][^-]*\"-\")*\"->\"")
 			;
 
-		attribute = "[^o]*?";
-		this->self( "ATTRIBUTE_VALUE" ).add( attribute );
+		attribute_begin = "\\\"|'";
+		attribute_end   = "\\\"|'";
+		attribute           = "[^\\\"']+";
+		this->self( "ATTRIBUTE_VALUE" )
+			= attribute
+			| attribute_end[ set_lexer_state( "INITIAL" ) ]
+			;
+
+		element           = "[^<]+";
+		this->self( "ELEMENT_VALUE" )
+			= element
+			| lex::token_def<char>( '<' )[ set_lexer_state( "INITIAL" ) ]
+			;
 
 		prolog              = "{WS}*<\\?xml.+?\\?>{WS}*";
 		xcb_begin           = "{WS}*<xcb{WS}+";
@@ -47,11 +75,12 @@ struct tokens
 		mask                = "{WS}*mask{WS}*";
 		list_begin          = "{WS}*<list{WS}+";
 		list_end            = "{WS}*<[/]list>{WS}*";
-		op                  = "{WS}*<op{WS}+";
+		op_begin            = "{WS}*<op{WS}+";
+		op_end              = "{WS}*<[/]op>{WS}*";
 		op_attr             = "{WS}*op{WS}*";
-		op_attr_val         = "[+\\-\\*/]|&amp;|&lt;|&lt;";
+		//op_attr_val         = "[+\\-\\*/]|&amp;|&lt;|&lt;";
 		fieldref_begin      = "{WS}*<fieldref>{WS}*";
-		fieldref_end        = "{WS}*<[/]fieldref>{WS}*";
+		fieldref_end        = "{WS}*[/]fieldref>{WS}*";
 		value_begin         = "{WS}*<value>{WS}*";
 		value_end           = "{WS}*<[/]value>{WS}*";
 		bit_begin           = "{WS}*<bit>{WS}*";
@@ -68,7 +97,7 @@ struct tokens
 		request_end         = "{WS}*<[/]request>{WS}*";
 		opcode              = "{WS}*opcode{WS}*";
 		combine_adjacent    = "{WS}*combine\\-adjacent{WS}*";
-		reply_begin         = "{WS}*<reply{WS}+";
+		reply_begin         = "{WS}*<reply>{WS}*";
 		reply_end           = "{WS}*<[/]reply>{WS}*";
 		event_begin         = "{WS}*<event{WS}+";
 		event_end           = "{WS}*<[/]event>{WS}*";
@@ -93,15 +122,16 @@ struct tokens
 		typedef_            = "{WS}*<typedef{WS}+";
 		oldname             = "{WS}*oldname{WS}*";
 		newname             = "{WS}*newname{WS}*";
-		import_begin        = "{WS}*<import{WS}+";
-		import_end          = "{WS}*<[/]import>{WS}*";
+		import_begin        = "{WS}*<import>{WS}*";
+		import_end          = "{WS}*[/]import>{WS}*";
 
-		close_tag = "{WS}*>|{WS}*[/]>";
+		close_tag = "{WS}*>|{WS}*[/]>{WS}*";
 		ws        = "{WS}";
 		any       = ".";
 
 		this->self
-			= prolog
+			= /*attribute
+			| */prolog
 			| xcb_begin
 			| xcb_end
 			| header
@@ -120,10 +150,11 @@ struct tokens
 			| mask
 			| list_begin
 			| list_end
-			| op
+			| op_begin
+			| op_end
 			| op_attr
-			| op_attr_val
-			| fieldref_begin
+			//| op_attr_val
+			| fieldref_begin[ set_lexer_state( "ELEMENT_VALUE" ) ]
 			| fieldref_end
 			| value_begin
 			| value_end
@@ -166,18 +197,23 @@ struct tokens
 			| typedef_
 			| oldname
 			| newname
-			| import_begin
+			| import_begin[ set_lexer_state( "ELEMENT_VALUE" ) ]
 			| import_end
 			| close_tag
-			| '='
-			| '"'
-			/*| "[/]"
+			| lex::token_def<char>( '=' )
+			| attribute_begin[ set_lexer_state( "ATTRIBUTE_VALUE" ) ]
+			/*| lex::token_def<char>( "\\\"|'" )[ set_lexer_state( "ATTRIBUTE_VALUE" ) ]
+			| "[/]"
 			| '>'*/
 			| ws
 			| any
 			;
 	}
-	lex::token_def<>
+	lex::token_def<std::string>
+		element,
+		attribute_begin,
+		attribute,
+		attribute_end,
 		prolog,
 		xcb_begin,
 		xcb_end,
@@ -197,9 +233,10 @@ struct tokens
 		mask,
 		list_begin,
 		list_end,
-		op,
+		op_begin,
+		op_end,
 		op_attr,
-		op_attr_val,
+		//op_attr_val,
 		fieldref_begin,
 		fieldref_end,
 		value_begin,
@@ -248,7 +285,7 @@ struct tokens
 		close_tag,
 		ws
 		;
-	lex::token_def<char> any, attribute;
+	lex::token_def<char> any;
 };
 
 } // end namespace proto
