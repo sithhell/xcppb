@@ -10,5 +10,5 @@ ADD_LIBRARY( xcppb SHARED ${xcppb_files} )
 
 TARGET_LINK_LIBRARIES( xcppb ${Boost_LIBRARIES} ${X11_LIBRARIES} )
 
-ADD_EXECUTABLE( cppgen proto/cppgen.cpp )
+ADD_EXECUTABLE( cppgen proto/tokens.cpp proto/cppgen.cpp )
 TARGET_LINK_LIBRARIES( cppgen ${Boost_LIBRARIES} )
