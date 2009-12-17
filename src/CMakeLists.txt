@@ -10,5 +10,6 @@ ADD_LIBRARY( xcppb SHARED ${xcppb_files} )
 
 TARGET_LINK_LIBRARIES( xcppb ${Boost_LIBRARIES} ${X11_LIBRARIES} )
 
-ADD_EXECUTABLE( cppgen proto/cppgen.cpp )
-TARGET_LINK_LIBRARIES( cppgen ${Boost_LIBRARIES} )
+FILE( GLOB compiler_sources proto/grammar/*.cpp )
+ADD_EXECUTABLE( compiler ${compiler_sources} proto/compile.cpp )
+TARGET_LINK_LIBRARIES( compiler ${Boost_LIBRARIES} )

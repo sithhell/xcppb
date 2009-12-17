@@ -37,6 +37,7 @@ int main( int /*argc*/, char **argv )
 		base_iterator_type,
 		boost::mpl::vector
 		<
+			lex::omit,
 			std::string,
 			char
 		>
@@ -64,11 +65,17 @@ int main( int /*argc*/, char **argv )
 	base_iterator_type start( str.begin() );
 	base_iterator_type end( str.end() );
 
+	xcppb::proto::xcb xcb;
+
 	//bool r = qi::phrase_parse( start, end, proto, ascii::space );
-	bool r = lex::tokenize_and_parse( start, end, tokens, proto );
+	bool r = lex::tokenize_and_parse( start, end, tokens, proto
+			, xcb
+			);
 
 	if( r )
 	{
+		std::cout << "header: " << xcb.header() << "\n";
+		std::cout << "extension_xname: " << xcb.extension_xname() << "\n";
 		std::cerr << "success\n";
 	}
 	else

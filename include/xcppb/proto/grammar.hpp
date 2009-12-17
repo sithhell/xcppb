@@ -4,13 +4,63 @@
 
 #include <xcppb/proto/tokens.hpp>
 
+#include <xcppb/proto/xcb.hpp>
+#include <xcppb/proto/var.hpp>
+
 #include <boost/config/warning_disable.hpp>
 #include <boost/spirit/include/qi.hpp>
+
+#include <boost/fusion/include/std_pair.hpp>
+#include <boost/fusion/include/map.hpp>
+#include <boost/fusion/include/make_map.hpp>
+#include <boost/fusion/include/adapt_struct.hpp>
 
 namespace spirit = boost::spirit;
 namespace phoenix = boost::phoenix;
 namespace ascii = boost::spirit::ascii;
 namespace qi = boost::spirit::qi;
+
+/*namespace xcppb
+{
+
+namespace proto
+{
+
+struct request
+{
+};
+
+struct typedef_
+{
+	typedef boost::array<std::string, 2> types_type;
+
+	types_type types;
+
+	std::string const &oldname() const
+	{
+		return types[0];
+	}
+
+	std::string const &newname() const
+	{
+		return types[1];
+	}
+};
+
+typedef boost::variant
+			<
+				typedef_,
+				std::string
+			> macro;
+
+}
+
+}
+
+BOOST_FUSION_ADAPT_STRUCT(
+	xcppb::proto::typedef_,
+	(xcppb::proto::typedef_::types_type, types)
+)*/
 
 namespace xcppb
 {
@@ -20,69 +70,78 @@ namespace proto
 
 template< typename Iterator >
 struct grammar
-	: qi::grammar< Iterator/*, qi::locals<std::string>, ascii::space_type*/ >
+	: qi::grammar
+		<
+			  Iterator
+			, xcppb::proto::xcb()
+		>
 {
 	template< typename TokenDef >
 	grammar( TokenDef const & tok )
-	:	grammar::base_type( xml, "xml" )
+	:	grammar::base_type( xcb, "xcb" )
 	{
-		xml.name( "xml" );
-		xml
-			= -( tok.prolog )
-			> xcb
-			;
-
 		attribute.name( "attribute" );
 		attribute
-			=  qi::lit( "=" )
-			>  tok.attribute_begin
-			>  tok.attribute
-			>  tok.attribute_end
+			%= qi::lazy( qi::_r1 )
+			> '='
+			> tok.attribute_begin
+			> tok.attribute
+			> tok.attribute_end
 			;
 
 		xcb.name( "xcb" );
 		xcb
-			=  tok.xcb_begin
-			>  (
-					  ( tok.header              > attribute )
-					^ ( tok.extension_xname     > attribute )
-					^ ( tok.extension_name      > attribute )
-					^ ( tok.extension_multiword > attribute )
-					^ ( tok.major_version       > attribute )
-					^ ( tok.minor_version       > attribute )
-			   )
-			>  tok.close_tag
-			>> *macro
-			>  tok.xcb_end
+			%= -( tok.prolog )
+			> tok.xcb_begin
+			> 
+			(
+				  attribute( phoenix::ref( tok.header              ) )  
+				^ attribute( phoenix::ref( tok.extension_xname     ) )
+				^ attribute( phoenix::ref( tok.extension_name      ) )
+				^ attribute( phoenix::ref( tok.extension_multiword ) )
+				^ attribute( phoenix::ref( tok.major_version       ) )
+				^ attribute( phoenix::ref( tok.minor_version       ) )
+			)
+			> tok.close_tag
+			> *macro
+			> tok.xcb_end
 			;
 
 		pad.name( "pad" );
 		pad
-			= tok.pad
-			> tok.bytes > attribute
+			%= tok.pad
+			> attribute( phoenix::ref( tok.bytes ) )
 			> tok.close_tag
 			;
 
 		var.name( "var" );
 		var
-			= ( tok.name      > attribute )
-			^ ( tok.type      > attribute )
-			^ ( tok.enum_attr > attribute )
-			^ ( tok.altenum   > attribute )
-			^ ( tok.mask      > attribute )
+			%= 
+			( attribute( phoenix::ref( tok.name      ) )
+			  ^
+			  ( attribute( phoenix::ref( tok.type      ) )
+				 ^
+				 ( attribute( phoenix::ref( tok.enum_attr ) )
+					^
+					( attribute( phoenix::ref( tok.altenum   ) )
+					  ^ attribute( phoenix::ref( tok.mask      ) )
+					)
+				 )
+			  )
+			)//[ qi::_val = qi::_1 ]
 			;
 
 		field.name( "field" );
 		field
 			= tok.field
-			> var
+			> qi::omit[ var ]
 			> tok.close_tag;
 			;
 
-		list.name( "name" );
+		list.name( "list" );
 		list
 			= tok.list_begin
-			> var
+			> qi::omit[ var ]
 			> tok.close_tag
 			> -( expression > tok.list_end )
 			;
@@ -90,7 +149,7 @@ struct grammar
 		op.name( "op" );
 		op
 			= tok.op_begin
-			> tok.op_attr > attribute
+			> attribute( phoenix::ref( tok.op_attr ) )
 			> tok.close_tag
 			> expression > expression
 			> tok.op_end
@@ -128,7 +187,7 @@ struct grammar
 		exprfield.name( "exprfield" );
 		exprfield
 			= tok.exprfield_begin
-			> var
+			> qi::omit[ var ]
 			> tok.close_tag
 			> expression
 			> tok.exprfield_end
@@ -137,9 +196,9 @@ struct grammar
 		valueparam.name( "valueparam" );
 		valueparam
 			=  tok.valueparam
-			> tok.value_mask_type > attribute
-			> tok.value_mask_name > attribute
-			> tok.value_list_name > attribute
+			> attribute( phoenix::ref( tok.value_mask_type ) )
+			> attribute( phoenix::ref( tok.value_mask_name ) )
+			> attribute( phoenix::ref( tok.value_list_name ) )
 			> tok.close_tag
 			;
 
@@ -152,15 +211,15 @@ struct grammar
 
 		struct_.name( "struct" );
 		struct_
-			=  tok.name > attribute
+			=  attribute( phoenix::ref( tok.name ) )
 			> tok.close_tag
 			> +fields
 			;
 
 		packet_struct.name( "packet-struct" );
 		packet_struct
-			= tok.name   > attribute
-			> tok.number > attribute
+			= attribute( phoenix::ref( tok.name   ) )
+			> attribute( phoenix::ref( tok.number ) )
 			> tok.close_tag
 			> *fields
 			;
@@ -169,9 +228,9 @@ struct grammar
 		packet_struct_copy
 			=
 			(
-				  ( tok.name   > attribute )
-				^ ( tok.number > attribute )
-				^ ( tok.ref    > attribute )
+				  attribute( phoenix::ref( tok.name   ) )
+				^ attribute( phoenix::ref( tok.number ) )
+				^ attribute( phoenix::ref( tok.ref    ) )
 			)
 			> tok.close_tag
 			;
@@ -191,9 +250,9 @@ struct grammar
 			= tok.request_begin
 			> 
 			(
-				  ( tok.name             > attribute )
-				^ ( tok.opcode           > attribute )
-				^ ( tok.combine_adjacent > attribute )
+				  attribute( phoenix::ref( tok.name             ) )
+				^ attribute( phoenix::ref( tok.opcode           ) )
+				^ attribute( phoenix::ref( tok.combine_adjacent ) )
 			)
 			> tok.close_tag
 			> *(
@@ -210,9 +269,9 @@ struct grammar
 			= tok.event_begin
 			> 
 			(
-				  ( tok.name               > attribute )
-				^ ( tok.number             > attribute )
-				^ ( tok.no_sequence_number > attribute )
+				  attribute( phoenix::ref( tok.name               ) )
+				^ attribute( phoenix::ref( tok.number             ) )
+				^ attribute( phoenix::ref( tok.no_sequence_number ) )
 			)
 			> tok.close_tag
 			> +fields
@@ -222,14 +281,14 @@ struct grammar
 		xidtype.name( "xidtype" );
 		xidtype
 			= tok.xidtype
-			> tok.name > attribute
+			> attribute( phoenix::ref( tok.name ) )
 			> tok.close_tag
 			;
 
 		xidunion.name( "xidunion" );
 		xidunion
 			= tok.xidunion_begin
-			> tok.name > attribute
+			> attribute( phoenix::ref( tok.name ) )
 			> tok.close_tag
 			> 
 			+(
@@ -243,7 +302,7 @@ struct grammar
 		item.name( "item" );
 		item
 			= tok.item_begin
-			> tok.name > attribute
+			> attribute( phoenix::ref( tok.name ) )
 			> tok.close_tag
 			> 
 			-(
@@ -255,7 +314,7 @@ struct grammar
 		enum_.name( "enum" );
 		enum_
 			= tok.enum_begin
-			> tok.name > attribute
+			> attribute( phoenix::ref( tok.name ) )
 			> tok.close_tag
 			> *item
 			> tok.enum_end
@@ -263,9 +322,12 @@ struct grammar
 
 		typedef_.name( "typedef" );
 		typedef_
-			= tok.typedef_
-			> tok.oldname > attribute
-			> tok.newname > attribute
+			%= tok.typedef_
+			> 
+			(
+				  attribute( phoenix::ref( tok.oldname ) )
+				^ attribute( phoenix::ref( tok.newname ) )
+			)
 			> tok.close_tag
 			;
 
@@ -273,50 +335,52 @@ struct grammar
 		import
 			= tok.import_begin
 			> tok.element
-			> qi::lit( '<' ) > tok.import_end
+			> '<'
+			> tok.import_end
 			;
 
 		macro.name( "macro" );
 		macro
-			= request
-			| event
+			= request[ qi::_val = "macro" ]
+			| event[ qi::_val = "macro" ]
 			| 
 			(
 				  tok.eventcopy
 				> packet_struct_copy
-			)
+			)[ qi::_val = "macro" ]
 			|
 			(
 				  tok.error_begin
 				> packet_struct
-				> -( tok.error_end ) )
+				> -( tok.error_end ) )[ qi::_val = "macro" ]
 			|
 			(
 				  tok.errorcopy
 				> packet_struct_copy
-			)
+			)[ qi::_val = "macro" ]
 			|
 			(
 				  tok.struct_begin
 				> struct_
 				> tok.struct_end
-			)
+			)[ qi::_val = "macro" ]
 			|
 			(
 				  tok.union_begin
 				> struct_
 				> tok.union_end
-			)
-			|  xidtype
-			|  xidunion
-			|  enum_
-			|  typedef_
-			|  import
+			)[ qi::_val = "macro" ]
+			|  xidtype[ qi::_val = "macro" ]
+			|  xidunion[ qi::_val = "macro" ]
+			|  enum_[ qi::_val = "macro" ]
+			|  typedef_[ qi::_val = "macro" ]
+			|  import[ qi::_val = "macro" ]
 			;
 
 		qi::on_error<qi::fail>
 		(
-			xml,
+			xcb,
+			// TODO: display token values in error message
 			std::cout
 				<< phoenix::val("Error! Expecting ")
 				<< qi::_4                               // what failed?
@@ -329,28 +393,26 @@ struct grammar
 
 	qi::rule
 	<
-		Iterator
-	> xml;
-
-	qi::rule
-	<
-		Iterator,
-		std::string()
+		  Iterator
+		, std::string( lex::token_def<lex::omit> )
 	> attribute;
 
 	qi::rule
 	<
-		Iterator
+		  Iterator
+		, xcppb::proto::xcb()
 	> xcb;
 
 	qi::rule
 	<
-		Iterator
+		  Iterator
+		, std::string()
 	> pad;
 	
 	qi::rule
 	<
-		Iterator
+		  Iterator
+		, xcppb::proto::var()
 	> var;
 	
 	qi::rule
@@ -475,7 +537,8 @@ struct grammar
 
 	qi::rule
 	<
-		Iterator
+		  Iterator
+		//, xcppb::proto::typedef_()
 	> typedef_;
 
 	qi::rule
@@ -485,7 +548,8 @@ struct grammar
 
 	qi::rule
 	<
-		Iterator
+		  Iterator
+		, std::string()
 	> macro;
 
 };
