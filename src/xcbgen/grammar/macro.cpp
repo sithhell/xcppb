@@ -6,24 +6,6 @@
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>
 
-namespace {
-
-void test( std::string const & s )
-{
-	std::cout << "xidtype: " << s << "\n";
-}
-#if 0
-void test( xcppb::xcbgen::attribute::xidunion const & u )
-{
-	std::cout << "xidunion: " << u.name << "\n";
-
-	std::copy( u.types.begin(), u.types.end(), std::ostream_iterator<std::string>( std::cout, "\n" ) );
-}
-#endif
-
-
-}
-
 namespace xcppb
 {
 
@@ -43,7 +25,7 @@ macro<Iterator>::macro
 (
 	  TokenDef const & tok
 )
-	: macro::base_type( rule, "" )
+	: macro::base_type( rule, "macro" )
 	, request_        ( tok )
 	, event_          ( tok )
 	, struct__        ( tok )
@@ -56,7 +38,7 @@ macro<Iterator>::macro
 	, packet_struct_     ( tok )
 	, packet_struct_copy_( tok )
 {
-	rule.name( "" );
+	rule.name( "macro" );
 	rule
 		%= request_
 		|  event_
@@ -65,24 +47,27 @@ macro<Iterator>::macro
 		|  errorcopy
 		|  struct__
 		|  union__
-		|  xidtype_[ ::test ]
+		|  xidtype_
 		|  xidunion_
 		|  enum__
 		|  typedef__
 		|  import_
 		;
 
+	eventcopy.name( "eventcopy" );
 	eventcopy
 		%= tok.eventcopy
 		>  packet_struct_copy_
 		;
 
+	error.name( "error" );
 	error
 		%= tok.error_begin
 		>  packet_struct_
 		>  -( tok.error_end )
 		;
 
+	errorcopy.name( "errorcopy" );
 	errorcopy
 		%= tok.errorcopy
 		>  packet_struct_copy_

@@ -5,8 +5,12 @@
 #include <xcppb/xcbgen/grammar/attribute.hpp>
 #include <xcppb/xcbgen/grammar/fields.hpp>
 
+#include <xcppb/xcbgen/attribute/event.hpp>
+
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi/nonterminal/rule.hpp>
+
+#include <boost/fusion/include/vector30.hpp>
 
 namespace xcppb
 {
@@ -22,7 +26,7 @@ struct event
 	: boost::spirit::qi::grammar
 	  <
 	  	  Iterator
-	  	//,
+	  	, xcppb::xcbgen::attribute::event()
 	  >
 {
 	template< typename TokenDef >
@@ -34,13 +38,14 @@ struct event
 	boost::spirit::qi::rule
 	<
 		  Iterator
-		//, 
+	  	, xcppb::xcbgen::attribute::event()
 	> rule;
 
 	boost::spirit::qi::rule
 	<
 		  Iterator
-		//, 
+		, xcppb::xcbgen::attribute::event::attributes()
+		//, boost::fusion::vector3< std::string, std::string, std::string >()
 	> attributes;
 
 	attribute<Iterator> name;

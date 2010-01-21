@@ -23,13 +23,13 @@ event<Iterator>::event
 (
 	  TokenDef const & tok
 )
-	: event::base_type  ( rule, "" )
+	: event::base_type  ( rule, "event" )
 	, name              ( tok, tok.name )
 	, number            ( tok, tok.number )
 	, no_sequence_number( tok, tok.no_sequence_number )
 	, fields_           ( tok )
 {
-	rule.name( "" );
+	rule.name( "event" );
 	rule
 		%= tok.event_begin
 		>  attributes
@@ -47,7 +47,6 @@ event<Iterator>::event
 			^ no_sequence_number
 		 )
 		;
-
 }
 
 template< typename Iterator >

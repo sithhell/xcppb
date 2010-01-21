@@ -23,11 +23,11 @@ exprfield<Iterator>::exprfield
 (
 	  TokenDef const & tok
 )
-	: exprfield::base_type( rule, "" )
+	: exprfield::base_type( rule, "expression field" )
 	, var_                 ( tok )
 	, expression_          ( tok )
 {
-	rule.name( "" );
+	rule.name( "expression field" );
 	rule
 		%= tok.exprfield_begin
 		>  var_

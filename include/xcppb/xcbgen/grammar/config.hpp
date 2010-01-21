@@ -21,7 +21,7 @@ namespace xcppb
 			typedef boost::spirit::lex::lexertl::token
 			<
 				base_iterator_type,
-				boost::mpl::vector
+				boost::mpl::vector3
 				<
 					boost::spirit::lex::omit,
 					std::string,

@@ -23,7 +23,7 @@ valueparam<Iterator>::valueparam
 (
 	  TokenDef const & tok
 )
-	: valueparam::base_type( rule, "" )
+	: valueparam::base_type( rule, "valueparam" )
 	, value_mask_type      ( tok, tok.value_mask_type )
 	, value_mask_name      ( tok, tok.value_mask_name )
 	, value_list_name      ( tok, tok.value_list_name )

@@ -23,10 +23,10 @@ xidtype<Iterator>::xidtype
 (
 	  TokenDef const & tok
 )
-	: xidtype::base_type( rule, "" )
+	: xidtype::base_type( rule, "xidtype" )
 	, name              ( tok, tok.name )
 {
-	rule.name( "" );
+	rule.name( "xidtype" );
 	rule
 		%= tok.xidtype
 		>  name

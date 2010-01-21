@@ -5,6 +5,8 @@
 #include <xcppb/xcbgen/grammar/fields.hpp>
 #include <xcppb/xcbgen/grammar/valueparam.hpp>
 
+#include <xcppb/xcbgen/attribute/reply.hpp>
+
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi/nonterminal/rule.hpp>
 
@@ -22,7 +24,7 @@ struct reply
 	: boost::spirit::qi::grammar
 	  <
 	  	  Iterator
-	  	//, xcb::xcbgen::attribute::reply()
+	  	, xcppb::xcbgen::attribute::reply()
 	  >
 {
 	template< typename TokenDef >
@@ -34,7 +36,7 @@ struct reply
 	boost::spirit::qi::rule
 	<
 		  Iterator
-		//, xcppb::xcbgen::attribute::reply()
+		, xcppb::xcbgen::attribute::reply()
 	> rule;
 
 	fields<Iterator>     fields_;

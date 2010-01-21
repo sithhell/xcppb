@@ -23,7 +23,7 @@ struct typedef_
 	: boost::spirit::qi::grammar
 	  <
 	  	  Iterator
-	  	, xcppb::xcbgen::attribute::typedef_
+	  	, xcppb::xcbgen::attribute::typedef_()
 	  >
 {
 	template< typename TokenDef >
@@ -35,13 +35,13 @@ struct typedef_
 	boost::spirit::qi::rule
 	<
 		  Iterator
-	  	, xcppb::xcbgen::attribute::typedef_
+	  	, xcppb::xcbgen::attribute::typedef_()
 	> rule;
 
 	boost::spirit::qi::rule
 	<
 		  Iterator
-	  	, xcppb::xcbgen::attribute::typedef_
+	  	, xcppb::xcbgen::attribute::typedef_()
 	> attributes;
 
 	attribute<Iterator> oldname;

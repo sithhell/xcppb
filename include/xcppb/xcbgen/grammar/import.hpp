@@ -2,6 +2,8 @@
 #ifndef XCPPB_PROTO_GRAMMAR_IMPORT_HPP
 #define XCPPB_PROTO_GRAMMAR_IMPORT_HPP
 
+#include <xcppb/xcbgen/attribute/import.hpp>
+
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi/nonterminal/rule.hpp>
 
@@ -19,7 +21,7 @@ struct import
 	: boost::spirit::qi::grammar
 	  <
 	  	  Iterator
-	  	, std::string()
+	  	, xcppb::xcbgen::attribute::import()
 	  >
 {
 	template< typename TokenDef >
@@ -31,7 +33,7 @@ struct import
 	boost::spirit::qi::rule
 	<
 		  Iterator
-		, std::string()
+	  	, xcppb::xcbgen::attribute::import()
 	> rule;
 
 	bool is_valid();

@@ -8,6 +8,8 @@
 #include <xcppb/xcbgen/grammar/valueparam.hpp>
 #include <xcppb/xcbgen/grammar/reply.hpp>
 
+#include <xcppb/xcbgen/attribute/request.hpp>
+
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi/nonterminal/rule.hpp>
 
@@ -25,7 +27,7 @@ struct request
 	: boost::spirit::qi::grammar
 	  <
 	  	  Iterator
-	  	//, xcb::xcbgen::attribute::request()
+	  	, xcppb::xcbgen::attribute::request()
 	  >
 {
 	template< typename TokenDef >
@@ -37,19 +39,19 @@ struct request
 	boost::spirit::qi::rule
 	<
 		  Iterator
-		//, xcppb::xcbgen::attribute::request()
+		, xcppb::xcbgen::attribute::request()
 	> rule;
 
 	boost::spirit::qi::rule
 	<
 		  Iterator
-		//, xcppb::xcbgen::attribute::request()
+		, xcppb::xcbgen::attribute::request::attributes_t()
 	> attributes;
 
 	boost::spirit::qi::rule
 	<
 		  Iterator
-		//, xcppb::xcbgen::attribute::request()
+		, std::vector< xcppb::xcbgen::attribute::request::element >()
 	> elements;
 
 	attribute<Iterator> name;

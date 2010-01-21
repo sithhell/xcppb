@@ -35,9 +35,9 @@ fieldref<Iterator>::fieldref
 (
 	  TokenDef const & tok
 )
-	: fieldref::base_type( rule, "" )
+	: fieldref::base_type( rule, "field reference" )
 {
-	rule.name( "" );
+	rule.name( "field reference" );
 	rule
 		= tok.fieldref_begin
 		>  tok.element[ qi::_val = phoenix::bind( ::convert, qi::_1 ) ]

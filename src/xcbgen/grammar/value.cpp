@@ -50,9 +50,9 @@ value<Iterator>::value
 (
 	  TokenDef const & tok
 )
-	: value::base_type( rule, "" )
+	: value::base_type( rule, "value" )
 {
-	rule.name( "" );
+	rule.name( "value" );
 	rule
 		= tok.value_begin
 		>  tok.element[ qi::_val = phoenix::bind( ::convert, qi::_1 ) ]

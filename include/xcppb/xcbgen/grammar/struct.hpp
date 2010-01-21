@@ -5,6 +5,8 @@
 #include <xcppb/xcbgen/grammar/attribute.hpp>
 #include <xcppb/xcbgen/grammar/fields.hpp>
 
+#include <xcppb/xcbgen/attribute/struct.hpp>
+
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi/nonterminal/rule.hpp>
 
@@ -22,7 +24,7 @@ struct struct_
 	: boost::spirit::qi::grammar
 	  <
 	  	  Iterator
-	  	//, xcb::xcbgen::attribute::struct_()
+	  	, xcppb::xcbgen::attribute::struct_()
 	  >
 {
 	template< typename TokenDef >
@@ -34,7 +36,7 @@ struct struct_
 	boost::spirit::qi::rule
 	<
 		  Iterator
-		//, xcppb::xcbgen::attribute::struct_()
+		, xcppb::xcbgen::attribute::struct_()
 	> rule;
 
 	attribute<Iterator> name;

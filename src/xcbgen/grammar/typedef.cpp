@@ -23,11 +23,11 @@ typedef_<Iterator>::typedef_
 (
 	  TokenDef const & tok
 )
-	: typedef_::base_type( rule, "" )
+	: typedef_::base_type( rule, "typedef" )
 	, oldname            ( tok, tok.oldname )
 	, newname            ( tok, tok.newname )
 {
-	rule.name( "" );
+	rule.name( "typedef" );
 	rule
 		%= tok.typedef_
 		>  attributes

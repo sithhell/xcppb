@@ -4,6 +4,8 @@
 
 #include <boost/fusion/include/adapt_struct.hpp>
 
+#include <boost/optional.hpp>
+
 #include <string>
 
 namespace xcppb
@@ -17,9 +19,9 @@ struct var
 {
 	std::string name;
 	std::string type;
-	std::string enum_attr;
-	std::string altenum;
-	std::string mask;
+	boost::optional< std::string > enum_attr;
+	boost::optional< std::string > altenum;
+	boost::optional< std::string > mask;
 };
 
 }
@@ -30,9 +32,9 @@ BOOST_FUSION_ADAPT_STRUCT(
 	xcppb::xcbgen::attribute::var,
 	( std::string, name )
 	( std::string, type )
-	( std::string, enum_attr )
-	( std::string, altenum )
-	( std::string, mask )
+	( boost::optional< std::string >, enum_attr )
+	( boost::optional< std::string >, altenum )
+	( boost::optional< std::string >, mask )
 )
 
 #endif

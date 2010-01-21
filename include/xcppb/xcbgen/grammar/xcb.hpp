@@ -5,6 +5,8 @@
 #include <xcppb/xcbgen/grammar/attribute.hpp>
 #include <xcppb/xcbgen/grammar/macro.hpp>
 
+#include <xcppb/xcbgen/attribute/xcb.hpp>
+
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi/nonterminal/rule.hpp>
 
@@ -22,7 +24,7 @@ struct xcb
 	: boost::spirit::qi::grammar
 	  <
 	  	  Iterator
-	  	//, xcb::xcbgen::attribute::xcb()
+	  	, xcppb::xcbgen::attribute::xcb()
 	  >
 {
 	template< typename TokenDef >
@@ -34,13 +36,13 @@ struct xcb
 	boost::spirit::qi::rule
 	<
 		  Iterator
-		//, xcppb::xcbgen::attribute::xcb()
+	  	, xcppb::xcbgen::attribute::xcb()
 	> rule;
 
 	boost::spirit::qi::rule
 	<
 		  Iterator
-		//,
+		, xcppb::xcbgen::attribute::xcb::attributes_t()
 	> attributes;
 
 	attribute<Iterator> header;
@@ -50,8 +52,8 @@ struct xcb
 	attribute<Iterator> major_version;
 	attribute<Iterator> minor_version;
 	macro<Iterator>     macros;
-
-	       bool is_valid();
+	
+	bool is_valid();
 };
 
 }

@@ -14,6 +14,8 @@
 #include <xcppb/xcbgen/grammar/packet_struct.hpp>
 #include <xcppb/xcbgen/grammar/packet_struct_copy.hpp>
 
+#include <xcppb/xcbgen/attribute/macro.hpp>
+
 #include <boost/spirit/home/qi/nonterminal/grammar.hpp>
 #include <boost/spirit/home/qi/nonterminal/rule.hpp>
 
@@ -31,7 +33,7 @@ struct macro
 	: boost::spirit::qi::grammar
 	  <
 	  	  Iterator
-	  	//,
+	  	, xcppb::xcbgen::attribute::macro()
 	  >
 {
 	template< typename TokenDef >
@@ -43,25 +45,25 @@ struct macro
 	boost::spirit::qi::rule
 	<
 		  Iterator
-		//, 
+	  	, xcppb::xcbgen::attribute::macro()
 	> rule;
 
 	boost::spirit::qi::rule
 	<
 		  Iterator
-		//, 
+	  	, xcppb::xcbgen::attribute::packet_struct_copy()
 	> eventcopy;
 
 	boost::spirit::qi::rule
 	<
 		  Iterator
-		//, 
+	  	, xcppb::xcbgen::attribute::packet_struct()
 	> error;
 
 	boost::spirit::qi::rule
 	<
 		  Iterator
-		//, 
+	  	, xcppb::xcbgen::attribute::packet_struct_copy()
 	> errorcopy;
 
 	request<Iterator>  request_;

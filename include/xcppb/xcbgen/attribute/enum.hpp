@@ -2,6 +2,8 @@
 #ifndef XCPPB_XCBGEN_ATTRIBUTE_ENUM_HPP
 #define XCPPB_XCBGEN_ATTRIBUTE_ENUM_HPP
 
+#include <xcppb/xcbgen/attribute/item.hpp>
+
 #include <boost/fusion/include/adapt_struct.hpp>
 
 #include <string>

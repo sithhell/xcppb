@@ -7,7 +7,7 @@
 #include <xcppb/xcbgen/attribute/bit.hpp>
 
 #include <boost/fusion/include/adapt_struct.hpp>
-#include <boost/variant.hpp>
+#include <boost/variant/recursive_variant.hpp>
 
 #include <string>
 
@@ -22,10 +22,10 @@ struct op;
 
 typedef boost::variant
 <
-	boost::recursive_wrapper< op >,
 	fieldref,
 	value,
-	bit
+	bit,
+	boost::recursive_wrapper< op >
 > expression;
 	
 struct op

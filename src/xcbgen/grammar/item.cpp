@@ -23,11 +23,11 @@ item<Iterator>::item
 (
 	  TokenDef const & tok
 )
-	: item::base_type( rule, "" )
+	: item::base_type( rule, "item" )
 	, name           ( tok, tok.name )
 	, expression_     ( tok )
 {
-	rule.name( "" );
+	rule.name( "item" );
 	rule
 		%= tok.item_begin
 		>  name

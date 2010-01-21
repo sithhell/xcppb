@@ -78,20 +78,21 @@ expression<Iterator>::expression
 (
 	  TokenDef const & tok
 )
-	: expression::base_type( rule, "" )
+	: expression::base_type( rule, "expression" )
 	, fieldref_             ( tok )
 	, value_                ( tok )
 	, bit_                  ( tok )
 	, op_attribute ( tok, tok.op_attr )
 {
-	rule.name( "" );
+	rule.name( "expression" );
 	rule
-		%= op
-		|  fieldref_
+		%= fieldref_
 		|  value_
 		|  bit_
+		|  op
 		;
 	
+	op.name( "operation" );
 	op
 		=
 		(

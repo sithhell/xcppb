@@ -23,11 +23,11 @@ reply<Iterator>::reply
 (
 	  TokenDef const & tok
 )
-	: reply::base_type( rule, "" )
+	: reply::base_type( rule, "reply" )
 	, fields_         ( tok )
 	, valueparam_     ( tok )
 {
-	rule.name( "" );
+	rule.name( "reply" );
 	rule
 		%= tok.reply_begin
 		>

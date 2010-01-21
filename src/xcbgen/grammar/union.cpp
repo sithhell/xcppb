@@ -23,11 +23,11 @@ union_<Iterator>::union_
 (
 	  TokenDef const & tok
 )
-	: union_::base_type( rule, "" )
+	: union_::base_type( rule, "union" )
 	, name              ( tok, tok.name )
 	, fields_           ( tok )
 {
-	rule.name( "" );
+	rule.name( "union" );
 	rule
 		%= tok.union_begin
 		>  name

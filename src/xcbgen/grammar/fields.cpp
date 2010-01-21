@@ -25,12 +25,12 @@ fields<Iterator>::fields
 (
 	  TokenDef const & tok
 )
-	: fields::base_type( rule, "" )
+	: fields::base_type( rule, "fields" )
 	, pad_             ( tok )
 	, field_           ( tok )
 	, list_            ( tok )
 {
-	rule.name( "" );
+	rule.name( "fields" );
 	rule
 		%= pad_
 		|  field_

@@ -23,11 +23,11 @@ struct_<Iterator>::struct_
 (
 	  TokenDef const & tok
 )
-	: struct_::base_type( rule, "" )
+	: struct_::base_type( rule, "struct" )
 	, name              ( tok, tok.name )
 	, fields_            ( tok )
 {
-	rule.name( "" );
+	rule.name( "struct" );
 	rule
 		%= tok.struct_begin
 		>  name

@@ -23,7 +23,7 @@ request<Iterator>::request
 (
 	  TokenDef const & tok
 )
-	: request::base_type( rule, "" )
+	: request::base_type( rule, "request" )
 	, name              ( tok, tok.name )
 	, opcode            ( tok, tok.opcode )
 	, combine_adjacent  ( tok, tok.combine_adjacent )
@@ -32,7 +32,7 @@ request<Iterator>::request
 	, valueparam_       ( tok )
 	, reply_            ( tok )
 {
-	rule.name( "" );
+	rule.name( "request" );
 	rule
 		%= tok.request_begin
 		>  attributes

@@ -5,6 +5,17 @@
 
 #include <boost/spirit/include/qi.hpp>
 
+namespace
+{
+xcppb::xcbgen::attribute::import convert( std::string const & s )
+{
+	xcppb::xcbgen::attribute::import i;
+	i.value = s ;
+
+	return i;
+}
+}
+
 namespace xcppb
 {
 
@@ -27,8 +38,8 @@ import<Iterator>::import
 {
 	rule.name( "import" );
 	rule
-		%= tok.import_begin
-		>  tok.element
+		= tok.import_begin
+		>  tok.element[ qi::_val = phoenix::bind( ::convert, qi::_1 ) ]
 		>  '<' > tok.import_end
 		;
 }

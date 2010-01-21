@@ -23,12 +23,12 @@ packet_struct<Iterator>::packet_struct
 (
 	  TokenDef const & tok
 )
-	: packet_struct::base_type( rule, "" )
+	: packet_struct::base_type( rule, "packet_struct" )
 	, name                    ( tok, tok.name )
 	, number                  ( tok, tok.number )
 	, fields_                 ( tok )
 {
-	rule.name( "" );
+	rule.name( "packet_struct" );
 	rule
 		%= name
 		>  number
