@@ -21,6 +21,7 @@ struct generator
 	generator()
 		: generator::base_type( xcb )
 	{
+		/*
 		xcb_attributes
 			=  karma::lit( "header = \"" ) << karma::string << "\"\n"
 			<< -( "extension xname = \"" << karma::string << "\"\n" )
@@ -82,7 +83,7 @@ struct generator
 			= var
 			<< -expression
 			;
-/*
+
 		exprfield
 			= karma::lit( "\t\texpression field" )
 			;

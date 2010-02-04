@@ -2,6 +2,8 @@
 #ifndef XCPPB_DATA_OBJECT_HPP
 #define XCPPB_DATA_OBJECT_HPP
 
+#include <xcppb/data/list.hpp>
+
 #include <boost/utility/enable_if.hpp>
 #include <boost/mpl/next.hpp>
 #include <boost/mpl/deref.hpp>
@@ -13,7 +15,11 @@
 #include <boost/mpl/greater_equal.hpp>
 #include <boost/mpl/plus.hpp>
 
+#include <boost/array.hpp>
+
 #include <cstring>
+
+#include <vector>
 
 namespace xcppb
 {
@@ -92,6 +98,30 @@ class object
 {
 
 	template< typename > friend struct object;
+
+	typedef typename mpl::accumulate
+	<
+		Sequence,
+		mpl::int_<0>,
+		mpl::plus
+		<
+			placeholders::_1,
+			mpl::if_
+			<
+				  is_list
+				  <
+					 mpl::deref
+					 <
+						 placeholders::_2
+					 >
+				  >
+				, mpl::int_< 1 >
+				, mpl::int_< 0 >
+			>
+		>
+	>::type number_lists; //!< 
+
+	typedef boost::array< std::vector<char>, number_lists::value > lists_container;
 	
 	public:
 		typedef typename mpl::accumulate
@@ -101,11 +131,22 @@ class object
 				mpl::plus
 				<
 					placeholders::_1,
-					mpl::sizeof_
+				   mpl::if_
 					<
-						mpl::deref
+						  is_list
+						  <
+						    mpl::deref
+						    <
+						  	    placeholders::_2
+						    >
+						  >
+						, mpl::int_< 0 >
+						, mpl::sizeof_
 						<
-							placeholders::_2
+							mpl::deref
+							<
+								placeholders::_2
+							>
 						>
 					>
 				>
@@ -199,8 +240,15 @@ class object
 		template< typename T >
 		typename boost::enable_if
 		<
-			mpl::contains< types, T >,
-			typename T::type
+			mpl::and_
+			<
+				  mpl::contains< types, T >
+				, mpl::not_
+				<
+					is_list< typename T::type >
+				>
+			>
+			, typename T::type
 		>::type
 		get() const
 		{
@@ -217,13 +265,80 @@ class object
 		template< typename T >
 		typename boost::enable_if
 		<
-			mpl::contains< types, T >
+			mpl::and_
+			<
+				  mpl::contains< types, T >
+				, mpl::not_
+				<
+					is_list< typename T::type >
+				>
+			>
 		>::type
 		set( typename T::type t)
 		{
 			const unsigned int idx( element_pos<T>::value );
-			
+
 			std::memcpy( data_ + idx, &t, sizeof( typename T::type ) );
+		}
+
+		/** !\brief getter for list elements
+		 */
+		template< typename T >
+		typename boost::enable_if
+		<
+			mpl::and_
+			<
+				  mpl::contains< types, T >
+				, is_list< typename T::type >
+			>
+			, typename T::type::type
+		>::type
+		get( typename lists_container::size_type i ) const
+		{
+			const unsigned int idx( list_pos<T>::value );
+			const unsigned int list_idx( i * ( sizeof( typename T::type::type ) / sizeof( char ) ) );
+			typename T::type::type t;
+			
+			if
+			(
+				   lists[idx].size() == 0u 
+				|| list_idx > lists[idx].size() - sizeof( typename T::type::type )
+			)
+			{
+				throw std::out_of_range( "out of range (xcppb::data::object::get)" );
+			}
+
+			std::memcpy( &t, &lists[idx][list_idx], sizeof( typename T::type::type ) );
+
+			return t;
+		}
+
+		/** !\brief setter for list elements
+		 */
+		template< typename T >
+		typename boost::enable_if
+		<
+			mpl::and_
+			<
+				  mpl::contains< types, T >
+				, is_list< typename T::type >
+			>
+		>::type
+		set( typename lists_container::size_type i, typename T::type::type t )
+		{
+			const unsigned int idx( list_pos<T>::value );
+			const unsigned int list_idx( i * ( sizeof( typename T::type::type ) / sizeof( char ) ) );
+
+			if
+			(
+				   lists[idx].size() == 0u 
+				|| list_idx > lists[idx].size() - sizeof( typename T::type::type )
+			)
+			{
+				lists[idx].resize( list_idx + sizeof( typename T::type::type ) );
+			}
+
+			std::memcpy( &lists[idx][list_idx], &t, sizeof( typename T::type::type ) );
 		}
 
 		unsigned int length() const
@@ -272,17 +387,58 @@ class object
 				mpl::plus
 				<
 					placeholders::_1,
-					mpl::sizeof_
+				   mpl::if_
 					<
-						mpl::deref
+						  is_list
+						  <
+						    mpl::deref
+						    <
+						  	    placeholders::_2
+						    >
+						  >
+						, mpl::int_< 0 >
+						, mpl::sizeof_
 						<
-							placeholders::_2
+							mpl::deref
+							<
+								placeholders::_2
+							>
 						>
 					>
 				>
 			>::type
 		{};
+		
+		template< typename Type >
+		struct list_pos
+			: mpl::accumulate
+			<
+				mpl::iterator_range
+				<
+					typename mpl::begin< types >::type,
+					typename mpl::find< types, Type >::type
+				>,
+				mpl::int_<0>,
+				mpl::plus
+				<
+					placeholders::_1,
+				   mpl::if_
+					<
+						  is_list
+						  <
+						    mpl::deref
+						    <
+						  	    placeholders::_2
+						    >
+						  >
+						, mpl::int_< 1 >
+						, mpl::int_< 0 >
+					>
+				>
+			>::type
+		{};
 
+		lists_container lists;
 };
 
 } // end namespace data
