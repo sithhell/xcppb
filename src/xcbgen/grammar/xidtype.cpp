@@ -39,18 +39,18 @@ bool xidtype<Iterator>::is_valid()
 {
 	return true;
 }
+
+template xidtype
+<
+	iterator_type
+>
+::xidtype
+(
+	lexer_tokens const &
+);
+
 } // end grammar
 
 } // end xcbgen
 
 } // end xcppb
-
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		xidtype<iterator_type> g( t );
-	}
-}

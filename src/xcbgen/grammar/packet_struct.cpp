@@ -43,18 +43,17 @@ bool packet_struct<Iterator>::is_valid()
 	return true;
 }
 
+template packet_struct
+<
+	iterator_type
+>
+::packet_struct
+(
+	lexer_tokens const &
+);
+
 } // end grammar
 
 } // end xcbgen
 
 } // end xcppb
-
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		packet_struct<iterator_type> g( t );
-	}
-}

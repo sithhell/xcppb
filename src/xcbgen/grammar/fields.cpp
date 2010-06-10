@@ -44,18 +44,17 @@ bool fields<Iterator>::is_valid()
 	return true;
 }
 
+template fields
+<
+	iterator_type
+>
+::fields
+(
+	lexer_tokens const &
+);
+
 } // end grammar
 
 } // end xcbgen
 
 } // end xcppb
-
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		fields<iterator_type> g( t );
-	}
-}

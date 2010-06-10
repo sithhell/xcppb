@@ -50,18 +50,17 @@ bool import<Iterator>::is_valid()
 	return true;
 }
 
+template import
+<
+	iterator_type
+>
+::import
+(
+	lexer_tokens const &
+);
+
 } // end grammar
 
 } // end xcbgen
 
 } // end xcppb
-
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		import<iterator_type> g( t );
-	}
-}

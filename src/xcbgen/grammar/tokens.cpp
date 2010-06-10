@@ -134,26 +134,18 @@ tokens<Lexer>::tokens()
 		;
 }
 
-}
+template class tokens
+<
+	lexer_type
+>;
 
 }
 
 }
 
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-
-		lex::token_def< std::string > strings;
-
-		lex::token_def< lex::omit   > tags;
-		lex::token_def< char        > any;
-
-		tokens
-		<
-			lexer_type
-		> l;
-	}
 }
+
+template class lex::token_def< std::string >;
+
+template class lex::token_def< lex::omit   >;
+template class lex::token_def< char        >;

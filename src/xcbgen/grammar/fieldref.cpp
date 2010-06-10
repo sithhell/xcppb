@@ -51,18 +51,17 @@ bool fieldref<Iterator>::is_valid()
 	return true;
 }
 
+template fieldref
+<
+	iterator_type
+>
+::fieldref
+(
+	lexer_tokens const &
+);
+
 } // end grammar
 
 } // end xcbgen
 
 } // end xcppb
-
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		fieldref<iterator_type> g( t );
-	}
-}

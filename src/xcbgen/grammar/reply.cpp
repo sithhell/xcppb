@@ -45,18 +45,17 @@ bool reply<Iterator>::is_valid()
 	return true;
 }
 
+template reply
+<
+	iterator_type
+>
+::reply
+(
+	lexer_tokens const &
+);
+
 } // end grammar
 
 } // end xcbgen
 
 } // end xcppb
-
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		reply<iterator_type> g( t );
-	}
-}

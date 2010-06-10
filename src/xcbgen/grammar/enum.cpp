@@ -43,18 +43,17 @@ bool enum_<Iterator>::is_valid()
 	return true;
 }
 
+template enum_
+<
+	iterator_type
+>
+::enum_
+(
+	lexer_tokens const &
+);
+
 } // end grammar
 
 } // end xcbgen
 
 } // end xcppb
-
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		enum_<iterator_type> g( t );
-	}
-}

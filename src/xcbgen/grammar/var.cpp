@@ -51,18 +51,17 @@ bool var<Iterator>::is_valid()
 	return true;
 }
 
+template var
+<
+	iterator_type
+>
+::var
+(
+	lexer_tokens const &
+);
+
 } // end grammar
 
 } // end xcbgen
 
 } // end xcppb
-
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		var<iterator_type> g( t );
-	}
-}

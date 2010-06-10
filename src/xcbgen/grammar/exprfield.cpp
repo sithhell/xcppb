@@ -43,18 +43,17 @@ bool exprfield<Iterator>::is_valid()
 	return true;
 }
 
+template exprfield
+<
+	iterator_type
+>
+::exprfield
+(
+	lexer_tokens const &
+);
+
 } // end grammar
 
 } // end xcbgen
 
 } // end xcppb
-
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		exprfield<iterator_type> g( t );
-	}
-}

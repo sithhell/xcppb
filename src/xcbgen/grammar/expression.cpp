@@ -112,6 +112,15 @@ bool expression<Iterator>::is_valid()
 	return true;
 }
 
+template expression
+<
+	iterator_type
+>
+::expression
+(
+	lexer_tokens const &
+);
+
 } // end grammar
 
 } // end xcbgen
@@ -122,8 +131,5 @@ namespace
 {
 	void instantiate()
 	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		expression<iterator_type> g( t );
 	}
 }

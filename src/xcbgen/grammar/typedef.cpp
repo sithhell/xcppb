@@ -50,18 +50,17 @@ bool typedef_<Iterator>::is_valid()
 	return true;
 }
 
+template typedef_
+<
+	iterator_type
+>
+::typedef_
+(
+	lexer_tokens const &
+);
+
 } // end grammar
 
 } // end xcbgen
 
 } // end xcppb
-
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		typedef_<iterator_type> g( t );
-	}
-}

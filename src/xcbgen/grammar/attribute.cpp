@@ -42,18 +42,17 @@ bool attribute<Iterator>::is_valid()
 	return true;
 }
 
+template attribute
+<
+	iterator_type
+>::attribute
+(
+	lexer_tokens const &,
+	lex::token_def<lex::omit> const &
+);
+
 } // end grammar
 
 } // end xcbgen
 
 } // end xcppb
-
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		attribute<iterator_type> g( t, t.name );
-	}
-}

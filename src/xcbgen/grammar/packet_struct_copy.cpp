@@ -51,18 +51,17 @@ bool packet_struct_copy<Iterator>::is_valid()
 	return true;
 }
 
+template packet_struct_copy
+<
+	iterator_type
+>
+::packet_struct_copy
+(
+	lexer_tokens const &	
+);
+
 } // end grammar
 
 } // end xcbgen
 
 } // end xcppb
-
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		packet_struct_copy<iterator_type> g( t );
-	}
-}

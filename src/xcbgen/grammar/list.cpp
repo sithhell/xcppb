@@ -48,18 +48,17 @@ bool list<Iterator>::is_valid()
 	return true;
 }
 
+template list
+<
+	iterator_type
+>
+::list
+(
+	lexer_tokens const &
+);
+
 } // end grammar
 
 } // end xcbgen
 
 } // end xcppb
-
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		list<iterator_type> g( t );
-	}
-}

@@ -53,18 +53,17 @@ bool bit<Iterator>::is_valid()
 	return true;
 }
 
+template
+bit
+<
+	iterator_type
+>::bit
+(
+	lexer_tokens const &
+);
+
 } // end grammar
 
 } // end xcbgen
 
 } // end xcppb
-
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		bit<iterator_type> g( t );
-	}
-}

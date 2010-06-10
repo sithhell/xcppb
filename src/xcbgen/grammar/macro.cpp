@@ -80,18 +80,17 @@ bool macro<Iterator>::is_valid()
 	return true;
 }
 
+template macro
+<
+	iterator_type
+>
+::macro
+(
+	lexer_tokens const &
+);
+
 } // end grammar
 
 } // end xcbgen
 
 } // end xcppb
-
-namespace
-{
-	void instantiate()
-	{
-		using namespace xcppb::xcbgen::grammar;
-		lexer_tokens t;
-		macro<iterator_type> g( t );
-	}
-}
